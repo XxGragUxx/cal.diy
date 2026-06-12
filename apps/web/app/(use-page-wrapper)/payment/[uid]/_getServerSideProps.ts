@@ -1,8 +1,7 @@
-import type { GetServerSidePropsContext } from "next";
 import prisma from "@calcom/prisma";
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const uid = context.params?.uid as string;
+export async function getServerSideProps({ params }: { params: { uid: string } }) {
+  const { uid } = params;
 
   if (!uid) {
     return { notFound: true as const };
