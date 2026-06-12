@@ -29,12 +29,13 @@ export async function getServerSideProps({ params }: { params: { uid: string } }
     },
   });
 
-  if (!paymentRecord || !paymentRecord.booking || !paymentRecord.booking.eventType) {
+  if (!paymentRecord || !paymentRecord.booking) {
     return { notFound: true as const };
   }
 
   const booking = paymentRecord.booking;
   const eventType = booking.eventType;
+  if (!eventType) return { notFound: true as const };
   const user = eventType.users?.[0] ?? null;
 
   return {
