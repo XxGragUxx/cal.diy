@@ -7,18 +7,21 @@ export async function getServerSideProps({ params }: { params: { uid: string } }
     return { notFound: true as const };
   }
 
-  const booking = await prisma.booking.findUnique({
+  const paymentRecord = await prisma.payment.findUnique({
     where: { uid },
     include: {
-      payment: true,
-      eventType: {
+      booking: {
         include: {
-          users: {
-            select: {
-              name: true,
-              username: true,
-              theme: true,
-              hideBranding: true,
+          eventType: {
+            include: {
+              users: {
+                select: {
+                  name: true,
+                  username: true,
+                  theme: true,
+                  hideBranding: true,
+                },
+              },
             },
           },
         },
@@ -26,25 +29,25 @@ export async function getServerSideProps({ params }: { params: { uid: string } }
     },
   });
 
-  if (!booking || !booking.payment.length || !booking.eventType) {
+  if (!paymentRecord || !paymentRecord.booking || !paymentRecord.booking.eventType) {
     return { notFound: true as const };
   }
 
-  const payment = booking.payment[0];
+  const booking = paymentRecord.booking;
   const eventType = booking.eventType;
   const user = eventType.users?.[0] ?? null;
 
   return {
     props: {
       payment: {
-        id: payment.id,
-        success: payment.success,
-        refunded: (payment as { refunded?: boolean }).refunded ?? false,
-        amount: payment.amount,
-        currency: payment.currency,
-        paymentOption: payment.paymentOption ?? null,
-        data: (payment.data as Record<string, unknown>) ?? {},
-        appId: payment.appId ?? null,
+        id: paymentRecord.id,
+        success: paymentRecord.success,
+        refunded: (paymentRecord as { refunded?: boolean }).refunded ?? false,
+        amount: paymentRecord.amount,
+        currency: paymentRecord.currency,
+        paymentOption: paymentRecord.paymentOption ?? null,
+        data: (paymentRecord.data as Record<string, unknown>) ?? {},
+        appId: paymentRecord.appId ?? null,
       },
       booking: {
         id: booking.id,
