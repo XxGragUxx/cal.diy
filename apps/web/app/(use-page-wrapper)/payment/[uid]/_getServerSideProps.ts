@@ -38,8 +38,20 @@ export async function getServerSideProps({ params }: { params: { uid: string } }
   if (!eventType) return { notFound: true as const };
   const user = eventType.users?.[0] ?? null;
 
+  const paymentData = (paymentRecord.data as Record<string, unknown>) ?? {};
+  const clientSecret = (paymentData.client_secret as string) ?? null;
+
+  const stripeCredential = await prisma.credential.findFirst({
+    where: { appId: "stripe" },
+    select: { key: true },
+  });
+  const credKey = stripeCredential?.key as Record<string, unknown> | null;
+  const stripePublishableKey = (credKey?.stripe_publishable_key as string) ?? null;
+
   return {
     props: {
+      clientSecret,
+      stripePublishableKey,
       payment: {
         id: paymentRecord.id,
         success: paymentRecord.success,
@@ -47,7 +59,7 @@ export async function getServerSideProps({ params }: { params: { uid: string } }
         amount: paymentRecord.amount,
         currency: paymentRecord.currency,
         paymentOption: paymentRecord.paymentOption ?? null,
-        data: (paymentRecord.data as Record<string, unknown>) ?? {},
+        data: paymentData,
         appId: paymentRecord.appId ?? null,
       },
       booking: {
