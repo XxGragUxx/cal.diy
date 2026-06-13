@@ -17,37 +17,39 @@ import dynamic from "next/dynamic";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 
-
 type PaymentPageProps = {
   payment: { id: number; success: boolean; refunded: boolean; amount: number; currency: string; paymentOption: string | null; data: Record<string, unknown>; appId?: string | null };
   clientSecret?: string | null;
+  stripePublishableKey?: string | null;
   booking: { id: number; uid: string; title: string; startTime: string; endTime: string; status: string; paid: boolean; description?: string | null; location?: string | null };
   eventType: { id: number; title: string; length: number; price: number; currency: string; metadata: Record<string, unknown> | null; successRedirectUrl?: string | null; forwardParamsSuccessRedirect?: boolean | null; recurringEvent?: unknown };
   profile: { theme?: string | null; hideBranding?: boolean };
   user?: { name?: string | null; username?: string | null } | null;
 };
 
+const StripePaymentComponent = dynamic(
+  () =>
+    import("@calcom/web/components/apps/stripepayment/StripePaymentComponent").then(
+      (m) => m.StripePaymentComponent
+    ),
+  { ssr: false }
+);
+
 const PaypalPaymentComponent = dynamic(
   () =>
     import("@calcom/web/components/apps/paypal/PaypalPaymentComponent").then((m) => m.PaypalPaymentComponent),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const AlbyPaymentComponent = dynamic(
   () => import("@calcom/web/components/apps/alby/AlbyPaymentComponent").then((m) => m.AlbyPaymentComponent),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const HitpayPaymentComponent = dynamic(
   () =>
     import("@calcom/web/components/apps/hitpay/HitpayPaymentComponent").then((m) => m.HitpayPaymentComponent),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const BtcpayPaymentComponent = dynamic(
@@ -55,9 +57,7 @@ const BtcpayPaymentComponent = dynamic(
     import("@calcom/web/components/apps/btcpayserver/BtcpayPaymentComponent").then(
       (m) => m.BtcpayPaymentComponent
     ),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const PaymentPage: FC<PaymentPageProps> = (props) => {
@@ -78,7 +78,6 @@ const PaymentPage: FC<PaymentPageProps> = (props) => {
     setIs24h(!!getIs24hClockFromLocalStorage());
     if (isEmbed) {
       requestAnimationFrame(function fixStripeIframe() {
-        // HACK: Look for stripe iframe and center position it just above the embed content
         const stripeIframeWrapper = document.querySelector(
           'iframe[src*="https://js.stripe.com/v3/authorize-with-url-inner"]'
         )?.parentElement;
@@ -158,8 +157,12 @@ const PaymentPage: FC<PaymentPageProps> = (props) => {
                   {props.payment.success && !props.payment.refunded && (
                     <div className="mt-4 text-center text-default dark:text-gray-300">{t("paid")}</div>
                   )}
-                  {props.payment.appId === "stripe" && !props.payment.success && (
-                    <div>{/* StripePaymentComponent removed */}</div>
+                  {props.payment.appId === "stripe" && !props.payment.success && props.clientSecret && props.stripePublishableKey && (
+                    <StripePaymentComponent
+                      clientSecret={props.clientSecret}
+                      stripePublishableKey={props.stripePublishableKey}
+                      bookingUid={props.booking.uid}
+                    />
                   )}
                   {props.payment.appId === "paypal" && !props.payment.success && (
                     <PaypalPaymentComponent payment={props.payment} />
