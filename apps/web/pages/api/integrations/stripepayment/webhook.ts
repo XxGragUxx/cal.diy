@@ -1,4 +1,6 @@
-import { prisma } from "@calcom/prisma";
+import { handlePaymentSuccess } from "@calcom/app-store/_utils/payments/handlePaymentSuccess";
+import { HttpError as HttpCode } from "@calcom/lib/http-error";
+import prisma from "@calcom/prisma";
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 
@@ -67,25 +69,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ received: true });
     }
 
-    if (
-      event.type === "payment_intent.succeeded" ||
-      event.type === "checkout.session.completed"
-    ) {
-      await prisma.payment.updateMany({
-        where: { externalId: paymentIntentId },
-        data: { success: true },
-      });
-
+    if (event.type === "payment_intent.succeeded" || event.type === "checkout.session.completed") {
       const payment = await prisma.payment.findFirst({
         where: { externalId: paymentIntentId },
-        select: { bookingId: true },
+        select: { id: true, bookingId: true },
       });
 
       if (payment?.bookingId) {
-        await prisma.booking.update({
-          where: { id: payment.bookingId },
-          data: { paid: true, status: "ACCEPTED" },
-        });
+        try {
+          await handlePaymentSuccess({
+            paymentId: payment.id,
+            appSlug: "stripe",
+            bookingId: payment.bookingId,
+            traceContext: {
+              traceId: event.id,
+              spanId: event.id,
+              operation: "stripe.webhook",
+            },
+          });
+        } catch (e: unknown) {
+          if (e instanceof HttpCode && e.statusCode === 200) {
+            return res.status(200).json({ received: true });
+          }
+          throw e;
+        }
       }
     }
 
