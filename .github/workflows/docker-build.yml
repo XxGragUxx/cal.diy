@@ -14,6 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker rmi $(docker images -q) 2>/dev/null || true
+          df -h
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
