@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ message: "Stripe not configured" });
     }
 
-    const stripe = new Stripe(secretKey, { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(secretKey, { apiVersion: "2020-08-27" });
     const rawBody = await getRawBody(req);
     const signature = req.headers["stripe-signature"] as string;
 
