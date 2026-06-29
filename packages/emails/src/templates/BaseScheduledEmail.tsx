@@ -26,6 +26,7 @@ export const BaseScheduledEmail = (
     timeFormat: TimeFormat | undefined;
     isOrganizer?: boolean;
     reassigned?: { name: string | null; email: string; reason?: string; byUser?: string };
+    customMessage?: React.ReactNode;
   } & Partial<React.ComponentProps<typeof BaseEmailHtml>>
 ) => {
   const { t, timeZone, locale, timeFormat: timeFormat_ } = props;
@@ -93,7 +94,7 @@ export const BaseScheduledEmail = (
           )}
           description={
             !!props.calEvent.cancellationReason && props.calEvent.cancellationReason.replace("$RCH$", "")
-          } // Removing flag to distinguish reschedule from cancellation
+          }
           withSpacer
         />
       )}
@@ -146,6 +147,7 @@ export const BaseScheduledEmail = (
           withSpacer
         />
       )}
+      {props.customMessage}
     </BaseEmailHtml>
   );
 };
