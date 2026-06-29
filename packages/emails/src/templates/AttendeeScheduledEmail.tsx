@@ -50,9 +50,14 @@ export const AttendeeScheduledEmail = (
         Rimanendo a Sua disposizione per qualsiasi chiarimento, Le porgo i miei migliori saluti.
       </p>
       <p style={{ margin: "0" }}>
-        <strong>Avv. Antonella POTENZA</strong><br />
-        difesamaltrattamenti.it
+      <img
+      src="https://staging.difesamaltrattamenti.it/logo.png"
+      alt="Avv. Antonella Potenza – difesamaltrattamenti.it"
+      width="220"
+      style={{ display: "block", maxWidth: "100%", height: "auto" }}
+      />
       </p>
+
     </div>
   ) : undefined;
 
