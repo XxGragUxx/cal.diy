@@ -8,7 +8,7 @@ export const AttendeeScheduledEmail = (
     attendee: Person;
   } & Partial<React.ComponentProps<typeof BaseScheduledEmail>>
 ) => {
-  const isConsulenza = props.calEvent.type === "Consulenza Strategica";
+  const isConsulenza = true;
 
   const meetLink = props.calEvent.videoCallData?.url;
   const startTime = dayjs(props.calEvent.startTime).tz(props.attendee.timeZone);
