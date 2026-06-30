@@ -1,5 +1,6 @@
 import dayjs from "@calcom/dayjs";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
+
 import { BaseScheduledEmail } from "./BaseScheduledEmail";
 
 export const AttendeeScheduledEmail = (
@@ -10,7 +11,12 @@ export const AttendeeScheduledEmail = (
 ) => {
   const isConsulenza = true;
 
-  const meetLink = props.calEvent.videoCallData?.url;
+  const meetLink =
+    props.calEvent.videoCallData?.url ||
+    (typeof props.calEvent.location === "string" && props.calEvent.location.startsWith("https://")
+      ? props.calEvent.location
+      : null);
+
   const startTime = dayjs(props.calEvent.startTime).tz(props.attendee.timeZone);
   const dateStr = startTime.format("DD/MM/YYYY");
   const timeStr = startTime.format("HH:mm");
@@ -50,14 +56,13 @@ export const AttendeeScheduledEmail = (
         Rimanendo a Sua disposizione per qualsiasi chiarimento, Le porgo i miei migliori saluti.
       </p>
       <p style={{ margin: "0" }}>
-      <img
-      src="https://staging.difesamaltrattamenti.it/logo.png"
-      alt="Avv. Antonella Potenza – difesamaltrattamenti.it"
-      width="220"
-      style={{ display: "block", maxWidth: "100%", height: "auto" }}
-      />
+        <img
+          src="https://staging.difesamaltrattamenti.it/logo_firma.png"
+          alt="Avv. Antonella Potenza – difesamaltrattamenti.it"
+          width="220"
+          style={{ display: "block", maxWidth: "100%", height: "auto" }}
+        />
       </p>
-
     </div>
   ) : undefined;
 
@@ -71,6 +76,7 @@ export const AttendeeScheduledEmail = (
         ? "Conferma prenotazione consulenza legale online – Difesamaltrattamenti.it"
         : undefined
       }
+      hideDefaultContent={isConsulenza}
       customMessage={customMessage}
       {...props}
     />
