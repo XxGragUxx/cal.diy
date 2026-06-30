@@ -77,6 +77,19 @@ export async function handlePaymentSuccess(params: {
       ? await eventManager.create(evt)
       : placeholderCreatedEvent;
     bookingData.references = { create: scheduleResult.referencesToCreate };
+
+    // Populate videoCallData from Google Calendar Meet link
+    const googleCalRef = scheduleResult.referencesToCreate.find(
+      (ref) => ref.type === "google_calendar" && ref.meetingUrl
+    );
+    if (googleCalRef?.meetingUrl && !evt.videoCallData) {
+      evt.videoCallData = {
+        type: "google_calendar",
+        id: googleCalRef.uid,
+        password: googleCalRef.meetingPassword || "",
+        url: googleCalRef.meetingUrl,
+      };
+    }
   }
 
   const requiresConfirmation = doesBookingRequireConfirmation({
@@ -157,7 +170,6 @@ export async function handlePaymentSuccess(params: {
       ...(platformClientParams ? platformClientParams : {}),
     };
 
-    // Trigger BOOKING_PAID webhooks
     const subscriberMeetingPaid = await getWebhooks({
       userId,
       eventTypeId: booking.eventTypeId,
@@ -182,7 +194,6 @@ export async function handlePaymentSuccess(params: {
       })
     );
 
-    // Wait for webhook invocations to finish before returning
     await Promise.all(bookingPaidSubscribers);
   } catch (error) {
     log.error("Error while triggering BOOKING_PAID webhook", safeStringify(error));
