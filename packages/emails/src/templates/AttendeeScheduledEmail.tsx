@@ -22,12 +22,7 @@ export const AttendeeScheduledEmail = (
   const timeStr = startTime.format("HH:mm");
 
   const customMessage = isConsulenza ? (
-    <div style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#374151", lineHeight: "1.7", marginTop: "28px", borderTop: "1px solid #e5e7eb", paddingTop: "24px" }}>
-        <div style={{background:'#fef3c7', padding:'8px', fontSize:'10px', fontFamily:'monospace', wordBreak:'break-all', marginBottom:'12px'}}>
-          loc: {String(props.calEvent.location)}<br/>
-          vcd: {String(props.calEvent.videoCallData?.url)}<br/>
-          desc: {String((props.calEvent as any).description).substring(0, 300)}
-        </div>     
+    <div style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#374151", lineHeight: "1.7", marginTop: "28px", borderTop: "1px solid #e5e7eb", paddingTop: "24px" }}>    
       <p style={{ margin: "0 0 12px 0" }}>Gentile Cliente,</p>
       <p style={{ margin: "0 0 12px 0" }}>
         con la presente Le confermo che la Sua richiesta di consulenza legale in videochiamata è stata registrata con successo.
