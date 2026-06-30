@@ -17,6 +17,7 @@ import { PersonInfo } from "../components/WhoInfo";
 
 export const BaseScheduledEmail = (
   props: {
+    hideDefaultContent?: boolean;
     calEvent: CalendarEvent;
     attendee: Person;
     timeZone: string;
@@ -80,72 +81,54 @@ export const BaseScheduledEmail = (
           : props.callToAction || <ManageLink attendee={props.attendee} calEvent={props.calEvent} />
       }
       subtitle={props.subtitle || <>{t("emailed_you_and_any_other_attendees")}</>}>
-      {props.calEvent.rejectionReason && (
+      {!props.hideDefaultContent && (
         <>
-          <Info label={t("rejection_reason")} description={props.calEvent.rejectionReason} withSpacer />
+          {props.calEvent.rejectionReason && (
+            <Info label={t("rejection_reason")} description={props.calEvent.rejectionReason} withSpacer />
+          )}
+          {props.calEvent.cancellationReason && (
+            <Info
+              label={t(props.calEvent.cancellationReason.startsWith("$RCH$") ? "reason_for_reschedule" : "cancellation_reason")}
+              description={!!props.calEvent.cancellationReason && props.calEvent.cancellationReason.replace("$RCH$", "")}
+              withSpacer
+            />
+          )}
+          {props.reassigned && !props.reassigned.byUser && (
+            <>
+              <Info label={t("reassigned_to")} description={<PersonInfo name={props.reassigned.name || undefined} email={props.reassigned.email} />} withSpacer />
+              {props.reassigned?.reason && <Info label={t("reason")} description={props.reassigned.reason} withSpacer />}
+            </>
+          )}
+          {props.reassigned && props.reassigned.byUser && (
+            <>
+              <Info label={t("reassigned_by")} description={props.reassigned.byUser} withSpacer />
+              {props.reassigned?.reason && <Info label={t("reason")} description={props.reassigned.reason} withSpacer />}
+            </>
+          )}
+          {rescheduledBy && <Info label={t("rescheduled_by")} description={rescheduledBy} withSpacer />}
+          <Info label={t("what")} description={props.calEvent.title} withSpacer />
+          <WhenInfo timeFormat={timeFormat} calEvent={props.calEvent} t={t} timeZone={timeZone} locale={locale} />
+          <WhoInfo calEvent={props.calEvent} t={t} />
+          <LocationInfo calEvent={props.calEvent} t={t} />
+          <Info label={t("description")} description={props.calEvent.description} withSpacer formatted />
+          <Info label={t("additional_notes")} description={props.calEvent.additionalNotes} withSpacer />
+          {props.includeAppsStatus && <AppsStatus calEvent={props.calEvent} t={t} />}
+          {props.isOrganizer && props.calEvent.assignmentReason && (
+            <Info
+              label={t("assignment_reason")}
+              description={`${t(props.calEvent.assignmentReason.category)}${props.calEvent.assignmentReason.details ? `: ${props.calEvent.assignmentReason.details}` : ""}`}
+              withSpacer
+            />
+          )}
+          <UserFieldsResponses t={t} calEvent={props.calEvent} isOrganizer={props.isOrganizer} />
+          {props.calEvent.paymentInfo?.amount && (
+            <Info
+              label={props.calEvent.paymentInfo.paymentOption === "HOLD" ? t("no_show_fee") : t("price")}
+              description={formatPrice(props.calEvent.paymentInfo.amount, props.calEvent.paymentInfo.currency, props.attendee.language.locale)}
+              withSpacer
+            />
+          )}
         </>
-      )}
-      {props.calEvent.cancellationReason && (
-        <Info
-          label={t(
-            props.calEvent.cancellationReason.startsWith("$RCH$")
-              ? "reason_for_reschedule"
-              : "cancellation_reason"
-          )}
-          description={
-            !!props.calEvent.cancellationReason && props.calEvent.cancellationReason.replace("$RCH$", "")
-          }
-          withSpacer
-        />
-      )}
-      {props.reassigned && !props.reassigned.byUser && (
-        <>
-          <Info
-            label={t("reassigned_to")}
-            description={
-              <PersonInfo name={props.reassigned.name || undefined} email={props.reassigned.email} />
-            }
-            withSpacer
-          />
-          {props.reassigned?.reason && (
-            <Info label={t("reason")} description={props.reassigned.reason} withSpacer />
-          )}
-        </>
-      )}
-      {props.reassigned && props.reassigned.byUser && (
-        <>
-          <Info label={t("reassigned_by")} description={props.reassigned.byUser} withSpacer />
-          {props.reassigned?.reason && (
-            <Info label={t("reason")} description={props.reassigned.reason} withSpacer />
-          )}
-        </>
-      )}
-      {rescheduledBy && <Info label={t("rescheduled_by")} description={rescheduledBy} withSpacer />}
-      <Info label={t("what")} description={props.calEvent.title} withSpacer />
-      <WhenInfo timeFormat={timeFormat} calEvent={props.calEvent} t={t} timeZone={timeZone} locale={locale} />
-      <WhoInfo calEvent={props.calEvent} t={t} />
-      <LocationInfo calEvent={props.calEvent} t={t} />
-      <Info label={t("description")} description={props.calEvent.description} withSpacer formatted />
-      <Info label={t("additional_notes")} description={props.calEvent.additionalNotes} withSpacer />
-      {props.includeAppsStatus && <AppsStatus calEvent={props.calEvent} t={t} />}
-      {props.isOrganizer && props.calEvent.assignmentReason && (
-        <Info
-          label={t("assignment_reason")}
-          description={`${t(props.calEvent.assignmentReason.category)}${props.calEvent.assignmentReason.details ? `: ${props.calEvent.assignmentReason.details}` : ""}`}
-          withSpacer
-        />
-      )}
-      <UserFieldsResponses t={t} calEvent={props.calEvent} isOrganizer={props.isOrganizer} />
-      {props.calEvent.paymentInfo?.amount && (
-        <Info
-          label={props.calEvent.paymentInfo.paymentOption === "HOLD" ? t("no_show_fee") : t("price")}
-          description={formatPrice(
-            props.calEvent.paymentInfo.amount,
-            props.calEvent.paymentInfo.currency,
-            props.attendee.language.locale
-          )}
-          withSpacer
-        />
       )}
       {props.customMessage}
     </BaseEmailHtml>
