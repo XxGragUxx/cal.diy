@@ -98,6 +98,18 @@ export async function handleConfirmation(args: {
       metadata.conferenceData = results[0].createdEvent?.conferenceData;
       metadata.entryPoints = results[0].createdEvent?.entryPoints;
     }
+
+// CHIAMATA LINK
+    if (metadata.hangoutLink && !evt.videoCallData) {
+      evt.videoCallData = {
+        type: "google_calendar",
+        id: "",
+        password: "",
+        url: metadata.hangoutLink,
+      };
+    }
+// ↑ FINE AGGIUNTA
+    
     try {
       const isHostConfirmationEmailsDisabled =
         eventTypeMetadata?.disableStandardEmails?.confirmation?.host || false;
