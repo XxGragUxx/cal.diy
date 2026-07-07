@@ -286,4 +286,4 @@ export async function handlePaymentSuccess(params: {
     statusCode: 200,
     message: `Booking with id '${booking.id}' was paid and confirmed.`,
   });
-
+}
