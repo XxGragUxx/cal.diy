@@ -1,3 +1,5 @@
+import { generateFatturaPA } from "./generateFatturaPA";
+import { sendInvoiceToAruba } from "./sendArubaInvoice";
 import { eventTypeAppMetadataOptionalSchema } from "@calcom/app-store/zod-utils";
 import { sendScheduledEmailsAndSMS } from "@calcom/emails/email-manager";
 import { doesBookingRequireConfirmation } from "@calcom/features/bookings/lib/doesBookingRequireConfirmation";
@@ -222,8 +224,66 @@ export async function handlePaymentSuccess(params: {
     await sendScheduledEmailsAndSMS({ ...evt }, undefined, undefined, undefined, eventType.metadata);
   }
 
+
+    // Fatturazione elettronica automatica
+  try {
+    const bookingWithResponses = await prisma.booking.findUnique({
+      where: { id: booking.id },
+      select: { responses: true, metadata: true },
+    });
+
+    const responses = (bookingWithResponses?.responses ?? {}) as Record<string, unknown>;
+    const clientCF      = String(responses["codice-fiscale"] ?? "");
+    const clientAddress = String(responses["indirizzo-residenza"] ?? "");
+    const clientName    = evt.attendees[0]?.name ?? "";
+
+    if (clientCF && clientAddress) {
+      // Calcola prossimo numero fattura
+      const yearSuffix = new Date().getFullYear().toString().slice(-2);
+      const lastInvoice = await prisma.$queryRaw<{ invoiceNumber: string }[]>`
+        SELECT metadata->>'invoiceNumber' AS "invoiceNumber"
+        FROM "Booking"
+        WHERE metadata->>'invoiceNumber' IS NOT NULL
+        ORDER BY id DESC LIMIT 1
+      `;
+      const lastN = lastInvoice[0]?.invoiceNumber
+        ? parseInt(lastInvoice[0].invoiceNumber.split("/")[0])
+        : 10;
+      const invoiceNumber = `${lastN + 1}/${yearSuffix}`;
+
+      const xml = generateFatturaPA({
+        invoiceNumber,
+        date: new Date(),
+        clientName,
+        clientCF,
+        clientAddress,
+      });
+
+      await sendInvoiceToAruba(xml);
+
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: {
+          metadata: {
+            ...(typeof bookingWithResponses?.metadata === "object"
+              ? (bookingWithResponses.metadata as object)
+              : {}),
+            invoiceNumber,
+          },
+        },
+      });
+
+      log.info(`Invoice ${invoiceNumber} generated for booking ${booking.id}`);
+    } else {
+      log.warn(`Booking ${booking.id}: CF or address missing, invoice skipped`);
+    }
+  } catch (error) {
+    log.error(`Invoice generation failed for booking ${booking.id}`, error);
+    // Non blocca il flusso di pagamento
+  }
+
   throw new HttpCode({
     statusCode: 200,
     message: `Booking with id '${booking.id}' was paid and confirmed.`,
   });
-}
+
