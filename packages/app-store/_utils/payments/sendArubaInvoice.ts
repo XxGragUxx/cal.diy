@@ -3,7 +3,7 @@ import logger from "@calcom/lib/logger";
 const log = logger.getSubLogger({ prefix: ["[arubaInvoice]"] });
 
 const AUTH_URL = "https://auth.fatturazioneelettronica.aruba.it";
-const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
+const WS_URL   = "https://demows.fatturazioneelettronica.aruba.it";
 
 async function getToken(): Promise<string> {
   const res = await fetch(`${AUTH_URL}/auth/signin`, {
