@@ -3,19 +3,22 @@ import logger from "@calcom/lib/logger";
 const log = logger.getSubLogger({ prefix: ["[arubaInvoice]"] });
 
 const AUTH_URL = "https://auth.fatturazioneelettronica.aruba.it";
-const WS_URL   = "https://demows.fatturazioneelettronica.aruba.it";
+const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
 
 async function getToken(): Promise<string> {
+  const body = `grant_type=password&username=${encodeURIComponent(process.env.ARUBA_USERNAME ?? "")}&password=${encodeURIComponent(process.env.ARUBA_PASSWORD ?? "")}`;
+
   const res = await fetch(`${AUTH_URL}/auth/signin`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "password",
-      username: process.env.ARUBA_USERNAME ?? "",
-      password: process.env.ARUBA_PASSWORD ?? "",
-    }),
+    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+    body,
   });
-  if (!res.ok) throw new Error(`Aruba auth failed: ${res.status}`);
+
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Aruba auth failed: ${res.status} — ${detail}`);
+  }
+
   const data = await res.json();
   return data.access_token as string;
 }
