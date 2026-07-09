@@ -57,7 +57,7 @@ export const AttendeeScheduledEmail = (
       </p>
       <p style={{ margin: "0" }}>
         <img
-          src="https://staging.difesamaltrattamenti.it/logo_firma.png"
+          src="https://difesamaltrattamenti.it/logo_firma.png"
           alt="Avv. Antonella Potenza – difesamaltrattamenti.it"
           width="220"
           style={{ display: "block", maxWidth: "100%", height: "auto" }}
