@@ -50,7 +50,7 @@ export const AttendeeScheduledEmail = (
         Questo mi permetterà di esaminare accuratamente il materiale prima del nostro colloquio.
       </p>
       <p style={{ margin: "0 0 12px 0" }}>
-        Le ricordo che la fattura relativa al pagamento da Lei effettuato Le verrà recapitata in modalità elettronica all'indirizzo e-mail o al codice SDI da Lei indicato.
+        La fattura elettronica relativa al pagamento da Lei effettuato, di cui riceverà copia via mail, verrà recapitata ai sensi di legge nel Suo cassetto fiscale.
       </p>
       <p style={{ margin: "0 0 20px 0" }}>
         Rimanendo a Sua disposizione per qualsiasi chiarimento, Le porgo i miei migliori saluti.
