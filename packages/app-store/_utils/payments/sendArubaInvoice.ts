@@ -6,8 +6,8 @@ const AUTH_URL = "https://auth.fatturazioneelettronica.aruba.it";
 const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
 
 async function getToken(): Promise<string> {
-  const username = process.env['ARUBA_USERNAME'] ?? "";
-  const password = process.env['ARUBA_PASSWORD'] ?? "";
+  const username = (process.env['ARUBA_USERNAME'] ?? '').trim();
+  const password = (process.env['ARUBA_PASSWORD'] ?? '').trim();
   const body = `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
 
   const res = await fetch(`${AUTH_URL}/auth/signin`, {
