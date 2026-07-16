@@ -33,10 +33,8 @@ export async function handlePaymentSuccess(params: {
   appSlug: string;
   bookingId: number;
   traceContext: TraceContext;
-  arubaUsername?: string;
-  arubaPassword?: string;
 }) {
-  const { paymentId, bookingId, appSlug, traceContext, arubaUsername, arubaPassword } = params;
+  const { paymentId, bookingId, appSlug, traceContext } = params;
   const updatedTraceContext = distributedTracing.updateTrace(traceContext, {
     bookingId,
     paymentId,
@@ -105,27 +103,17 @@ export async function handlePaymentSuccess(params: {
   if (requiresConfirmation) {
     delete bookingData.status;
   }
+
   const paymentUpdate = prisma.payment.update({
-    where: {
-      id: paymentId,
-    },
-    data: {
-      success: true,
-    },
-    select: {
-      id: true,
-      externalId: true,
-    },
+    where: { id: paymentId },
+    data: { success: true },
+    select: { id: true, externalId: true },
   });
 
   const bookingUpdate = prisma.booking.update({
-    where: {
-      id: booking.id,
-    },
+    where: { id: booking.id },
     data: bookingData,
-    select: {
-      status: true,
-    },
+    select: { status: true },
   });
 
   const [payment, updatedBooking] = await prisma.$transaction([paymentUpdate, bookingUpdate]);
@@ -238,6 +226,14 @@ export async function handlePaymentSuccess(params: {
     const clientName    = evt.attendees[0]?.name ?? "";
 
     if (clientCF && clientAddress) {
+      const appData = await prisma.app.findUnique({
+        where: { slug: "stripe" },
+        select: { keys: true },
+      });
+      const appKeys = appData?.keys as Record<string, string> | null;
+      const arubaUsername = appKeys?.aruba_username ?? "";
+      const arubaPassword = appKeys?.aruba_password ?? "";
+
       const yearSuffix = new Date().getFullYear().toString().slice(-2);
       const lastInvoice = await prisma.$queryRaw<{ invoiceNumber: string }[]>`
         SELECT metadata->>'invoiceNumber' AS "invoiceNumber"
@@ -258,10 +254,7 @@ export async function handlePaymentSuccess(params: {
         clientAddress,
       });
 
-      await sendInvoiceToAruba(xml, {
-        username: arubaUsername ?? "",
-        password: arubaPassword ?? "",
-      });
+      await sendInvoiceToAruba(xml, { username: arubaUsername, password: arubaPassword });
 
       await prisma.booking.update({
         where: { id: booking.id },
