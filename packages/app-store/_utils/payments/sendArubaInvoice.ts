@@ -1,3 +1,4 @@
+import getConfig from "next/config";
 import logger from "@calcom/lib/logger";
 
 const log = logger.getSubLogger({ prefix: ["[arubaInvoice]"] });
@@ -6,9 +7,9 @@ const AUTH_URL = "https://auth.fatturazioneelettronica.aruba.it";
 const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
 
 async function getToken(): Promise<string> {
-  const runtimeEnv: NodeJS.ProcessEnv = process.env;
-  const username = (runtimeEnv["ARUBA_USERNAME"] ?? "").trim();
-  const password = (runtimeEnv["ARUBA_PASSWORD"] ?? "").trim();
+  const { serverRuntimeConfig } = getConfig() ?? { serverRuntimeConfig: {} };
+  const username = (serverRuntimeConfig?.ARUBA_USERNAME ?? "").trim();
+  const password = (serverRuntimeConfig?.ARUBA_PASSWORD ?? "").trim();
 
   const body = `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
 
