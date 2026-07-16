@@ -33,7 +33,7 @@ function adjustEnvVariables(): void {
   if (process.env.NEXT_PUBLIC_SINGLE_ORG_SLUG) {
     if (process.env.RESERVED_SUBDOMAINS) {
       console.warn(
-        `⚠️  WARNING: RESERVED_SUBDOMAINS is ignored when SINGLE_ORG_SLUG is set. Single org mode doesn't need to use reserved subdomain validation.`
+        `â ï¸  WARNING: RESERVED_SUBDOMAINS is ignored when SINGLE_ORG_SLUG is set. Single org mode doesn't need to use reserved subdomain validation.`
       );
       delete envMutable.RESERVED_SUBDOMAINS;
     }
@@ -223,6 +223,10 @@ const nextConfig = (phase: string): NextConfig => {
 
   return {
     output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
+    serverRuntimeConfig: {
+      ARUBA_USERNAME: process.env.ARUBA_USERNAME ?? "",
+      ARUBA_PASSWORD: process.env.ARUBA_PASSWORD ?? "",
+    },
     serverExternalPackages: [
       "deasync",
       "http-cookie-agent",
