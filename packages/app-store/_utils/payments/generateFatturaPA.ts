@@ -98,16 +98,18 @@ export function generateFatturaPA(params: FatturaPAParams): string {
           <BolloVirtuale>SI</BolloVirtuale>
           <ImportoBollo>2.00</ImportoBollo>
         </DatiBollo>
+        <DatiCassaPrevidenziale>
+          <TipoCassa>TC01</TipoCassa>
+          <AlCassa>4.00</AlCassa>
+          <ImportoContributoCassa>5.77</ImportoContributoCassa>
+          <ImponibileCassa>144.23</ImponibileCassa>
+          <AliquotaIVA>0.00</AliquotaIVA>
+          <Ritenuta>NO</Ritenuta>
+          <Natura>N2.2</Natura>
+        </DatiCassaPrevidenziale>
+        <ImportoTotaleDocumento>150.00</ImportoTotaleDocumento>
+        <Causale>Operazione effettuata ai sensi dell&apos;art. 1, commi 54-89, L. 190/2014 e ss. mm, non soggetta a ritenuta d&apos;acconto - Regime forfettario. Imposta di bollo assolta virtualmente.</Causale>
       </DatiGeneraliDocumento>
-      <DatiCassaPrevidenziale>
-        <TipoCassa>CAF</TipoCassa>
-        <AlCassa>4.00</AlCassa>
-        <ImportoContributoCassa>5.77</ImportoContributoCassa>
-        <ImponibileCassa>144.23</ImponibileCassa>
-        <AliquotaIVA>0.00</AliquotaIVA>
-        <Ritenuta>NO</Ritenuta>
-        <Natura>N2.2</Natura>
-      </DatiCassaPrevidenziale>
     </DatiGenerali>
     <DatiBeniServizi>
       <DettaglioLinee>
