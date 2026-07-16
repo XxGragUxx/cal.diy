@@ -1,4 +1,3 @@
-import getConfig from "next/config";
 import logger from "@calcom/lib/logger";
 
 const log = logger.getSubLogger({ prefix: ["[arubaInvoice]"] });
@@ -6,10 +5,13 @@ const log = logger.getSubLogger({ prefix: ["[arubaInvoice]"] });
 const AUTH_URL = "https://auth.fatturazioneelettronica.aruba.it";
 const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
 
-async function getToken(): Promise<string> {
-  const { serverRuntimeConfig } = getConfig() ?? { serverRuntimeConfig: {} };
-  const username = (serverRuntimeConfig?.ARUBA_USERNAME ?? "").trim();
-  const password = (serverRuntimeConfig?.ARUBA_PASSWORD ?? "").trim();
+interface ArubaCredentials {
+  username: string;
+  password: string;
+}
+
+async function getToken(credentials: ArubaCredentials): Promise<string> {
+  const { username, password } = credentials;
 
   const body = `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
 
@@ -30,8 +32,11 @@ async function getToken(): Promise<string> {
   return data.access_token as string;
 }
 
-export async function sendInvoiceToAruba(xml: string): Promise<string> {
-  const token = await getToken();
+export async function sendInvoiceToAruba(
+  xml: string,
+  credentials: ArubaCredentials
+): Promise<string> {
+  const token = await getToken(credentials);
   const dataFile = Buffer.from(xml, "utf-8").toString("base64");
 
   const res = await fetch(`${WS_URL}/services/invoice/upload`, {

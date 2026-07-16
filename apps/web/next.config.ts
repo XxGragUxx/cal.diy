@@ -223,10 +223,7 @@ const nextConfig = (phase: string): NextConfig => {
 
   return {
     output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
-    serverRuntimeConfig: {
-      ARUBA_USERNAME: process.env.ARUBA_USERNAME ?? "",
-      ARUBA_PASSWORD: process.env.ARUBA_PASSWORD ?? "",
-    },
+    
     serverExternalPackages: [
       "deasync",
       "http-cookie-agent",
