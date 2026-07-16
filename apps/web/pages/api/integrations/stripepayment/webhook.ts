@@ -86,6 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               spanId: event.id,
               operation: "stripe.webhook",
             },
+            arubaUsername: process.env.ARUBA_USERNAME ?? "",
+            arubaPassword: process.env.ARUBA_PASSWORD ?? "",
           });
         } catch (e: unknown) {
           if (e instanceof HttpCode && e.statusCode === 200) {
