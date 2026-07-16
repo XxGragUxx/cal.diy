@@ -33,8 +33,10 @@ export async function handlePaymentSuccess(params: {
   appSlug: string;
   bookingId: number;
   traceContext: TraceContext;
+  arubaUsername?: string;
+  arubaPassword?: string;
 }) {
-  const { paymentId, bookingId, appSlug, traceContext } = params;
+  const { paymentId, bookingId, appSlug, traceContext, arubaUsername, arubaPassword } = params;
   const updatedTraceContext = distributedTracing.updateTrace(traceContext, {
     bookingId,
     paymentId,
@@ -80,7 +82,6 @@ export async function handlePaymentSuccess(params: {
       : placeholderCreatedEvent;
     bookingData.references = { create: scheduleResult.referencesToCreate };
 
-    // Populate videoCallData from Google Calendar Meet link
     const googleCalRef = scheduleResult.referencesToCreate.find(
       (ref) => ref.type === "google_calendar" && ref.meetingUrl
     );
@@ -224,8 +225,7 @@ export async function handlePaymentSuccess(params: {
     await sendScheduledEmailsAndSMS({ ...evt }, undefined, undefined, undefined, eventType.metadata);
   }
 
-
-    // Fatturazione elettronica automatica
+  // Fatturazione elettronica automatica
   try {
     const bookingWithResponses = await prisma.booking.findUnique({
       where: { id: booking.id },
@@ -238,7 +238,6 @@ export async function handlePaymentSuccess(params: {
     const clientName    = evt.attendees[0]?.name ?? "";
 
     if (clientCF && clientAddress) {
-      // Calcola prossimo numero fattura
       const yearSuffix = new Date().getFullYear().toString().slice(-2);
       const lastInvoice = await prisma.$queryRaw<{ invoiceNumber: string }[]>`
         SELECT metadata->>'invoiceNumber' AS "invoiceNumber"
@@ -259,7 +258,10 @@ export async function handlePaymentSuccess(params: {
         clientAddress,
       });
 
-      await sendInvoiceToAruba(xml);
+      await sendInvoiceToAruba(xml, {
+        username: arubaUsername ?? "",
+        password: arubaPassword ?? "",
+      });
 
       await prisma.booking.update({
         where: { id: booking.id },
@@ -273,13 +275,12 @@ export async function handlePaymentSuccess(params: {
         },
       });
 
-      log.info(`Invoice ${invoiceNumber} generated for booking ${booking.id}`);
+      log.warn(`Invoice ${invoiceNumber} generated for booking ${booking.id}`);
     } else {
       log.warn(`Booking ${booking.id}: CF or address missing, invoice skipped`);
     }
   } catch (error) {
     log.error(`Invoice generation failed for booking ${booking.id}`, error);
-    // Non blocca il flusso di pagamento
   }
 
   throw new HttpCode({
