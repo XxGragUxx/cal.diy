@@ -7,10 +7,8 @@ const WS_URL   = "https://ws.fatturazioneelettronica.aruba.it";
 
 async function getToken(): Promise<string> {
   const runtimeEnv: NodeJS.ProcessEnv = process.env;
-  const username = (runtimeEnv['ARUBA_USERNAME'] ?? '').trim();
-  const password = (runtimeEnv['ARUBA_PASSWORD'] ?? '').trim();
-
-  log.info(`Aruba auth attempt — username length: ${username.length}, password length: ${password.length}, username prefix: ${username.substring(0, 5)}`);
+  const username = (runtimeEnv["ARUBA_USERNAME"] ?? "").trim();
+  const password = (runtimeEnv["ARUBA_PASSWORD"] ?? "").trim();
 
   const body = `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
 
@@ -22,7 +20,9 @@ async function getToken(): Promise<string> {
 
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error(`Aruba auth failed: ${res.status} — ${detail}`);
+    throw new Error(
+      `Aruba auth failed: ${res.status} — ${detail} [u_len=${username.length} p_len=${password.length} u5=${username.substring(0, 5)}]`
+    );
   }
 
   const data = await res.json();
@@ -47,6 +47,6 @@ export async function sendInvoiceToAruba(xml: string): Promise<string> {
     throw new Error(`Aruba upload error ${result.errorCode}: ${result.errorDescription}`);
   }
 
-  log.info(`Invoice sent to Aruba: ${result.uploadFileName}`);
+  log.warn(`Invoice sent to Aruba: ${result.uploadFileName}`);
   return result.uploadFileName as string;
 }
